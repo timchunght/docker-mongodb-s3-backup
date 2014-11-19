@@ -1,4 +1,4 @@
-# Mongodb to Amazon s3 Backup Script
+# Mongodb to Amazon S3 Backup Script
 
 ## Usage
 
