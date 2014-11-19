@@ -18,6 +18,7 @@ This script dumps the current mongo database, tars it, then sends it to an Amazo
 
 OPTIONS:
    -h      Show this message
+   -n      Mongodb node host
    -u      Mongodb user
    -p      Mongodb password
    -k      AWS Access Key
@@ -27,6 +28,7 @@ OPTIONS:
 EOF
 }
 
+MONGODB_HOST=
 MONGODB_USER=
 MONGODB_PASSWORD=
 AWS_ACCESS_KEY=
@@ -40,6 +42,9 @@ do
     h)
       usage
       exit 1
+      ;;
+    n)
+      MONGODB_HOST=$OPTARG
       ;;
     u)
       MONGODB_USER=$OPTARG
@@ -66,7 +71,7 @@ do
   esac
 done
 
-if [[ -z $MONGODB_USER ]] || [[ -z $MONGODB_PASSWORD ]] || [[ -z $AWS_ACCESS_KEY ]] || [[ -z $AWS_SECRET_KEY ]] || [[ -z $S3_REGION ]] || [[ -z $S3_BUCKET ]]
+if [[ -z $MONGODB_USER ]] || [[ -z $MONGODB_PASSWORD ]] || [[ -z $AWS_ACCESS_KEY ]] || [[ -z $AWS_SECRET_KEY ]] || [[ -z $S3_REGION ]] || [[ -z $S3_BUCKET ]] || [[ -z $MONGO_HOST ]]
 then
   usage
   exit 1
@@ -82,13 +87,13 @@ ARCHIVE_NAME="$FILE_NAME.tar.gz"
 
 # Lock the database
 # Note there is a bug in mongo 2.2.0 where you must touch all the databases before you run mongodump
-mongo -username "$MONGODB_USER" -password "$MONGODB_PASSWORD" admin --eval "var databaseNames = db.getMongo().getDBNames(); for (var i in databaseNames) { printjson(db.getSiblingDB(databaseNames[i]).getCollectionNames()) }; printjson(db.fsyncLock());"
+mongo -username "$MONGODB_USER" -password "$MONGODB_PASSWORD" "$MONGO_HOST/admin" --eval "var databaseNames = db.getMongo().getDBNames(); for (var i in databaseNames) { printjson(db.getSiblingDB(databaseNames[i]).getCollectionNames()) }; printjson(db.fsyncLock());"
 
 # Dump the database
-mongodump -username "$MONGODB_USER" -password "$MONGODB_PASSWORD" --out $DIR/backup/$FILE_NAME
+mongodump -username "$MONGODB_USER" -password "$MONGODB_PASSWORD" "$MONGO_HOST" --out $DIR/backup/$FILE_NAME
 
 # Unlock the database
-mongo -username "$MONGODB_USER" -password "$MONGODB_PASSWORD" admin --eval "printjson(db.fsyncUnlock());"
+mongo -username "$MONGODB_USER" -password "$MONGODB_PASSWORD" "$MONGO_HOST/admin" --eval "printjson(db.fsyncUnlock());"
 
 # Tar Gzip the file
 tar -C $DIR/backup/ -zcvf $DIR/backup/$ARCHIVE_NAME $FILE_NAME/
