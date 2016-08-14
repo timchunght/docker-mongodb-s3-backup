@@ -4,14 +4,22 @@
 #
 # To Do - Add logging of output.
 # To Do - Abstract bucket region to options
+echo MONGODB_USER=$MONGODB_USER
+echo MONGODB_HOST=$MONGODB_HOST
+echo MONGODB_USER=$MONGODB_USER
+echo MONGODB_PASSWORD=$MONGODB_PASSWORD
+echo AWS_ACCESS_KEY=$AWS_ACCESS_KEY
+echo AWS_ACCESS_SECRET=$AWS_ACCESS_SECRET
+echo S3_REGION=$S3_REGION
+echo S3_BUCKET=$S3_BUCKET
 
 set -e
 
 export PATH="$PATH:/usr/local/bin"
 
-if [[ -z $MONGODB_USER ]] || [[ -z $MONGODB_PASSWORD ]] || [[ -z $AWS_ACCESS_KEY ]] || [[ -z $AWS_SECRET_KEY ]] || [[ -z $S3_REGION ]] || [[ -z $S3_BUCKET ]] || [[ -z $MONGO_HOST ]]
+if [[ -z $MONGODB_USER ]] || [[ -z $MONGODB_PASSWORD ]] || [[ -z $AWS_ACCESS_KEY ]] || [[ -z $AWS_ACCESS_SECRET ]] || [[ -z $S3_REGION ]] || [[ -z $S3_BUCKET ]] || [[ -z $MONGO_HOST ]]
 then
-  echo "Please make sure all fields are available: docker run -n MONGODB_HOST -e MONGODB_USER=username -p MONGODB_PASSWORD=password -e AWS_ACCESS_KEY=aws_access_key -e AWS_SECRET_KEY=aws_secret_key -e S3_REGION=s3_region -e S3_BUCKET=s3_bucket_name timchunght/mongodb-s3-backup"
+  echo "Please make sure all fields are available: docker run -n MONGODB_HOST -e MONGODB_USER=username -p MONGODB_PASSWORD=password -e AWS_ACCESS_KEY=aws_access_key -e AWS_ACCESS_SECRET=aws_secret_key -e S3_REGION=s3_region -e S3_BUCKET=s3_bucket_name timchunght/mongodb-s3-backup"
   exit 1
 fi
 
@@ -45,7 +53,7 @@ HEADER_DATE=$(date -u "+%a, %d %b %Y %T %z")
 CONTENT_MD5=$(openssl dgst -md5 -binary $DIR/backup/$ARCHIVE_NAME | openssl enc -base64)
 CONTENT_TYPE="application/x-download"
 STRING_TO_SIGN="PUT\n$CONTENT_MD5\n$CONTENT_TYPE\n$HEADER_DATE\n/$S3_BUCKET/$ARCHIVE_NAME"
-SIGNATURE=$(echo -e -n $STRING_TO_SIGN | openssl dgst -sha1 -binary -hmac $AWS_SECRET_KEY | openssl enc -base64)
+SIGNATURE=$(echo -e -n $STRING_TO_SIGN | openssl dgst -sha1 -binary -hmac $AWS_ACCESS_SECRET | openssl enc -base64)
 
 curl -X PUT \
 --header "Host: $S3_BUCKET.s3-$S3_REGION.amazonaws.com" \
