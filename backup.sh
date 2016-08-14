@@ -17,7 +17,7 @@ set -e
 
 export PATH="$PATH:/usr/local/bin"
 
-if [[ -z $MONGODB_USER ]] || [[ -z $MONGODB_PASSWORD ]] || [[ -z $AWS_ACCESS_KEY ]] || [[ -z $AWS_ACCESS_SECRET ]] || [[ -z $S3_REGION ]] || [[ -z $S3_BUCKET ]] || [[ -z $MONGODB_HOST ]]
+if [[ -z $MONGODB_USER ]] || [[ -z $MONGODB_DB ]] || [[ -z $MONGODB_PASSWORD ]] || [[ -z $AWS_ACCESS_KEY ]] || [[ -z $AWS_ACCESS_SECRET ]] || [[ -z $S3_REGION ]] || [[ -z $S3_BUCKET ]] || [[ -z $MONGODB_HOST ]]
 then
   echo "Please make sure all fields are available: docker run -e MONGODB_DB=db_name -e MONGODB_HOST=host_with_port -e MONGODB_USER=username -p MONGODB_PASSWORD=password -e AWS_ACCESS_KEY=aws_access_key -e AWS_ACCESS_SECRET=aws_secret_key -e S3_REGION=s3_region -e S3_BUCKET=s3_bucket_name timchunght/mongodb-s3-backup"
   exit 1
